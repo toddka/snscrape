@@ -1488,46 +1488,7 @@ class TwitterUserScraper(TwitterSearchScraper):
 		if not obj['data'] or obj['data']['user']['result']['__typename'] == 'UserUnavailable':
 			return None
 		user = obj['data']['user']['result']
-		rawDescription = user['legacy']['description']
-		renderedDescription = self._render_text_with_urls(rawDescription, user['legacy']['entities']['description']['urls'])
-		link = None
-		if user['legacy'].get('url'):
-			entity = user['legacy']['entities'].get('url', {}).get('urls', [None])[0]
-			if not entity or entity['url'] != user['legacy']['url']:
-				self.logger.warning(f'Link inconsistency on user')
-			if not entity:
-				entity = {'indices': (0, len(user['legacy']['url']))}
-			link = TextLink(text = entity.get('display_url'), url = entity.get('expanded_url', user['legacy']['url']), tcourl = user['legacy']['url'], indices = tuple(entity['indices']))
-		label = None
-		if (labelO := user['affiliates_highlighted_label'].get('label')):
-			label = self._user_label_to_user_label(labelO)
-		return User(
-			username = user['legacy']['screen_name'],
-			id = int(user['rest_id']),
-			displayname = user['legacy']['name'],
-			rawDescription = rawDescription,
-			renderedDescription = renderedDescription,
-			descriptionLinks = [TextLink(
-			                      text = x.get('display_url'),
-			                      url = x['expanded_url'],
-			                      tcourl = x['url'],
-			                      indices = tuple(x['indices']),
-			                    ) for x in user['legacy']['entities']['description']['urls']],
-			verified = user['legacy']['verified'],
-			created = email.utils.parsedate_to_datetime(user['legacy']['created_at']),
-			followersCount = user['legacy']['followers_count'],
-			friendsCount = user['legacy']['friends_count'],
-			statusesCount = user['legacy']['statuses_count'],
-			favouritesCount = user['legacy']['favourites_count'],
-			listedCount = user['legacy']['listed_count'],
-			mediaCount = user['legacy']['media_count'],
-			location = user['legacy']['location'],
-			protected = user['legacy']['protected'],
-			link = link,
-			profileImageUrl = user['legacy']['profile_image_url_https'],
-			profileBannerUrl = user['legacy'].get('profile_banner_url'),
-			label = label,
-		  )
+		return user
 
 	def get_items(self):
 		if self._isUserId:
